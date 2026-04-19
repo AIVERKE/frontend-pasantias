@@ -14,6 +14,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,
+    hmr: {
+      overlay: true
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

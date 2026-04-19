@@ -4,6 +4,7 @@ import vuetify from './plugins/vuetify'
 import router from './router'
 import pinia from './stores'
 import axios from 'axios'
+import './assets/tailwind.css'
 
 const app = createApp(App)
 

@@ -5,15 +5,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('@/layouts/MainLayout.vue'),
-      children: [
-        {
-          path: '',
-          name: 'home',
-          component: () => import('@/views/HomeView.vue'),
-        },
-        // Aquí irán las demás rutas: login, bitacora, etc.
-      ],
+      name: 'home',
+      component: () => import('@/views/LandingView.vue'),
     },
   ],
 })
