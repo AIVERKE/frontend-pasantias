@@ -56,7 +56,45 @@
       </div>
     </div>
 
-    <!-- Sección Equipo (Jefes de Pasantes) -->
+    <!-- Galería Fotográfica de la Empresa -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h2 class="font-headline font-bold text-secondary text-lg flex items-center gap-2">
+          <v-icon icon="mdi-image-multiple" size="20" class="text-primary"></v-icon>
+          Galería de la Empresa (Opcional)
+        </h2>
+        <span class="text-xs font-medium text-gray-500 bg-gray-200 px-2.5 py-1 rounded-full">{{ empresa.galeria.length }} / 6 Fotos</span>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-gray-500 mb-6 max-w-3xl">
+          Sube fotografías de tus oficinas, equipo de trabajo o instalaciones para que los postulantes conozcan más sobre tu entorno laboral. Esto se mostrará públicamente en tu perfil empresarial.
+        </p>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Zona Dropzone (Subir) -->
+          <div v-if="empresa.galeria.length < 6" class="aspect-video rounded-xl bg-neutral border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 hover:border-primary/50 hover:text-primary transition-all group">
+            <v-icon icon="mdi-cloud-upload-outline" size="28" class="mb-1 group-hover:-translate-y-1 transition-transform"></v-icon>
+            <span class="text-xs font-bold">Subir Foto</span>
+          </div>
+
+          <!-- Fotos Subidas -->
+          <div v-for="(foto, idx) in empresa.galeria" :key="idx" class="aspect-video rounded-xl overflow-hidden relative group bg-gray-100 border border-gray-200">
+            <!-- Imagen simulada con gradiente y placeholder -->
+            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-50 flex items-center justify-center text-primary/30 relative">
+              <img v-if="foto.url" :src="foto.url" class="w-full h-full object-cover" />
+              <v-icon v-else icon="mdi-office-building-outline" size="32"></v-icon>
+            </div>
+            
+            <!-- Botón Eliminar -->
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <button @click="eliminarFoto(idx)" class="bg-danger text-white w-8 h-8 rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Eliminar foto">
+                <v-icon icon="mdi-trash-can-outline" size="16"></v-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
         <h2 class="font-headline font-bold text-secondary text-lg flex items-center gap-2">
@@ -99,8 +137,16 @@ const empresa = ref({
   rubro: 'Desarrollo de Software y Tecnología',
   nit: '4928371029',
   direccion: 'Av. Arce #2450, Edificio Multicentro, Piso 12, La Paz',
-  descripcion: 'Empresa líder en desarrollo de soluciones tecnológicas innovadoras para el sector financiero y educativo. Contamos con un equipo multidisciplinario altamente calificado.'
+  descripcion: 'Empresa líder en desarrollo de soluciones tecnológicas innovadoras para el sector financiero y educativo. Contamos con un equipo multidisciplinario altamente calificado.',
+  galeria: [
+    { url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400&h=300' },
+    { url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=400&h=300' }
+  ]
 })
+
+const eliminarFoto = (idx) => {
+  empresa.value.galeria.splice(idx, 1)
+}
 
 const equipo = ref([
   { id: 1, iniciales: 'MF', nombre: 'Lic. María Fernández', area: 'Recursos Humanos y TI' },

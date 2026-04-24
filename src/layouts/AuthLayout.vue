@@ -1,18 +1,17 @@
 <template>
   <div class="min-h-screen flex font-body selection:bg-blue-900/50">
     <!-- COLUMNA IZQUIERDA: Branding (Oculta en móviles) -->
-    <div class="hidden lg:flex flex-col justify-between w-1/2 bg-secondary relative overflow-hidden p-12">
+    <div class="hidden lg:flex flex-col justify-between w-1/2 bg-[#0d1117] relative overflow-hidden p-12">
       <!-- Fondo: Patrón Geométrico (Simulado con gradientes) -->
-      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent"></div>
-      <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4=')]"></div>
+      <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIwLjA1Ii8+PC9zdmc+')]"></div>
 
       <!-- Contenido Superior -->
       <div class="relative z-10">
         <router-link to="/" class="inline-flex flex-col gap-4 group">
-          <img src="/images/logotipo_letras.png" alt="Símbolo UMSA" class="h-20 w-auto object-contain brightness-200 drop-shadow-md origin-left transition-transform group-hover:scale-105" />
+          <img src="/images/logotipo_letras.png" alt="Símbolo UMSA" class="h-16 w-auto object-contain brightness-200 origin-left transition-transform group-hover:scale-105" />
           <div class="text-white mt-4">
             <h1 class="text-3xl font-headline font-bold leading-tight tracking-tight">Sistema de Gestión <br/> de <span class="text-primary font-light italic">Pasantías</span></h1>
-            <p class="text-white/60 text-sm mt-2 font-medium tracking-wide">UMSA · Academic Ecosystem</p>
           </div>
         </router-link>
       </div>

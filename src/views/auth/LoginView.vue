@@ -36,12 +36,12 @@
       </div>
 
       <div class="flex items-center justify-end">
-        <router-link to="/auth/recuperar-password" class="text-sm font-bold text-primary hover:text-blue-700 hover:underline transition-colors">
+        <router-link to="/auth/recuperar-password" class="text-sm font-bold text-black hover:underline transition-colors">
           ¿Olvidaste tu contraseña?
         </router-link>
       </div>
 
-      <button type="submit" class="w-full bg-primary hover:bg-blue-600 text-white font-bold py-3.5 rounded-lg shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 flex justify-center items-center gap-2 mt-4">
+      <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3.5 rounded-lg shadow-sm transition-all hover:shadow-md flex justify-center items-center gap-2 mt-4">
         Iniciar Sesión
         <v-icon icon="mdi-login" size="20"></v-icon>
       </button>
@@ -49,7 +49,7 @@
 
     <div class="mt-8 text-center pt-8 border-t border-gray-100">
       <p class="text-gray-500">¿No tienes una cuenta?</p>
-      <router-link to="/auth/bienvenida" class="inline-block mt-2 text-primary font-bold hover:text-blue-700 hover:underline transition-colors">
+      <router-link to="/auth/bienvenida" class="inline-block mt-2 text-black font-bold hover:underline transition-colors">
         Crear una cuenta nueva
       </router-link>
     </div>
