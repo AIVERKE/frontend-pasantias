@@ -97,21 +97,25 @@ const router = useRouter()
 const isTutor = computed(() => route.path.includes('/tutor'))
 const isJefe = computed(() => route.path.includes('/jefe'))
 const isGerente = computed(() => route.path.includes('/gerente'))
+const isAdmin = computed(() => route.path.includes('/admin'))
 
 // Datos del usuario dinámicos
 const userName = computed(() => {
+  if (isAdmin.value) return 'Admin UMSA'
   if (isGerente.value) return 'Ing. Roberto Silva'
   if (isJefe.value) return 'Lic. María Fernández'
   if (isTutor.value) return 'Ing. Carlos Mendoza'
   return 'Juan Pérez'
 })
 const userInitials = computed(() => {
+  if (isAdmin.value) return 'AU'
   if (isGerente.value) return 'RS'
   if (isJefe.value) return 'MF'
   if (isTutor.value) return 'CM'
   return 'JP'
 })
 const userRoleName = computed(() => {
+  if (isAdmin.value) return 'Super Usuario'
   if (isGerente.value) return 'Gerente General'
   if (isJefe.value) return 'Jefe de Pasantes'
   if (isTutor.value) return 'Tutor UMSA'
@@ -120,7 +124,14 @@ const userRoleName = computed(() => {
 
 // Menús dinámicos
 const menuItems = computed(() => {
-  if (isGerente.value) {
+  if (isAdmin.value) {
+    return [
+      { label: 'Panel Principal', path: '/admin/dashboard', icon: 'mdi-view-dashboard' },
+      { label: 'Usuarios', path: '/admin/usuarios', icon: 'mdi-account-multiple' },
+      { label: 'Empresas', path: '/admin/empresas', icon: 'mdi-domain', badge: '2' },
+      { label: 'Pasantías', path: '/admin/pasantias', icon: 'mdi-bullhorn' }
+    ]
+  } else if (isGerente.value) {
     return [
       { label: 'Panel Principal', path: '/gerente/dashboard', icon: 'mdi-view-dashboard' },
       { label: 'Mi Empresa', path: '/gerente/empresa', icon: 'mdi-domain' },

@@ -15,37 +15,37 @@ const router = createRouter({
         {
           path: '/estudiante/dashboard',
           name: 'Dashboard',
-          component: () => import('@/views/student/DashboardView.vue'),
+          component: () => import('@/views/estudiante/DashboardView.vue'),
           meta: { title: 'Panel Principal', subtitle: 'Resumen de tu progreso como estudiante' }
         },
         {
           path: '/estudiante/pasantias',
           name: 'Pasantias',
-          component: () => import('@/views/student/PasantiasView.vue'),
+          component: () => import('@/views/estudiante/PasantiasView.vue'),
           meta: { title: 'Explorar Pasantías', subtitle: 'Encuentra y postula a nuevas oportunidades' }
         },
         {
           path: '/estudiante/inscripcion',
           name: 'Inscripcion',
-          component: () => import('@/views/student/InscripcionView.vue'),
+          component: () => import('@/views/estudiante/InscripcionView.vue'),
           meta: { title: 'Mi Inscripción', subtitle: 'Gestiona el estado de tus postulaciones' }
         },
         {
           path: '/estudiante/bitacora',
           name: 'Bitacora',
-          component: () => import('@/views/student/BitacoraView.vue'),
+          component: () => import('@/views/estudiante/BitacoraView.vue'),
           meta: { title: 'Bitácora', subtitle: 'Revisa tus registros semanales y puntajes' }
         },
         {
           path: '/estudiante/hoja-vida',
           name: 'HojaVida',
-          component: () => import('@/views/student/HojaVidaView.vue'),
+          component: () => import('@/views/estudiante/HojaVidaView.vue'),
           meta: { title: 'Mi Hoja de Vida', subtitle: 'Actualiza tu perfil profesional y habilidades' }
         },
         {
           path: '/estudiante/informe',
           name: 'InformeFinal',
-          component: () => import('@/views/student/InformeFinalView.vue'),
+          component: () => import('@/views/estudiante/InformeFinalView.vue'),
           meta: { title: 'Mi Informe Final', subtitle: 'Revisa tu nota final y el informe emitido por la empresa' }
         },
         // --- RUTAS DEL TUTOR ---
@@ -134,6 +134,31 @@ const router = createRouter({
           name: 'GerentePasantes',
           component: () => import('@/views/gerente/PasantesActivosView.vue'),
           meta: { title: 'Pasantes Activos', subtitle: 'Visión global de todos los estudiantes en la empresa' }
+        },
+        // --- RUTAS DEL SUPER USUARIO (ADMIN) ---
+        {
+          path: '/admin/dashboard',
+          name: 'AdminDashboard',
+          component: () => import('@/views/admin/DashboardView.vue'),
+          meta: { title: 'Panel Principal', subtitle: 'Centro de control global del sistema' }
+        },
+        {
+          path: '/admin/usuarios',
+          name: 'AdminUsuarios',
+          component: () => import('@/views/admin/UsuariosView.vue'),
+          meta: { title: 'Gestión de Usuarios', subtitle: 'Administración de cuentas por rol' }
+        },
+        {
+          path: '/admin/empresas',
+          name: 'AdminEmpresas',
+          component: () => import('@/views/admin/EmpresasView.vue'),
+          meta: { title: 'Directorio de Empresas', subtitle: 'Registro y validación de empresas aliadas' }
+        },
+        {
+          path: '/admin/pasantias',
+          name: 'AdminPasantias',
+          component: () => import('@/views/admin/PasantiasGlobalView.vue'),
+          meta: { title: 'Catálogo de Pasantías', subtitle: 'Visión global de todas las convocatorias' }
         }
       ]
     }
