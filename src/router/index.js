@@ -9,6 +9,54 @@ const router = createRouter({
       component: () => import('@/views/LandingView.vue'),
     },
     {
+      path: '/auth',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      children: [
+        {
+          path: 'bienvenida',
+          name: 'AuthBienvenida',
+          component: () => import('@/views/auth/BienvenidaView.vue'),
+          meta: { title: 'Bienvenido' }
+        },
+        {
+          path: 'login',
+          name: 'AuthLogin',
+          component: () => import('@/views/auth/LoginView.vue'),
+          meta: { title: 'Iniciar Sesión' }
+        },
+        {
+          path: 'registro-estudiante',
+          name: 'AuthRegistroEstudiante',
+          component: () => import('@/views/auth/RegistroEstudianteView.vue'),
+          meta: { title: 'Registro Estudiante' }
+        },
+        {
+          path: 'registro-tutor',
+          name: 'AuthRegistroTutor',
+          component: () => import('@/views/auth/RegistroTutorView.vue'),
+          meta: { title: 'Registro Tutor' }
+        },
+        {
+          path: 'registro-empresa',
+          name: 'AuthRegistroEmpresa',
+          component: () => import('@/views/auth/RegistroEmpresaView.vue'),
+          meta: { title: 'Registro Empresa' }
+        },
+        {
+          path: 'recuperar-password',
+          name: 'AuthRecuperarPassword',
+          component: () => import('@/views/auth/RecuperarPasswordView.vue'),
+          meta: { title: 'Recuperar Contraseña' }
+        },
+        {
+          path: 'confirmacion',
+          name: 'AuthConfirmacion',
+          component: () => import('@/views/auth/ConfirmacionView.vue'),
+          meta: { title: 'Confirmación' }
+        }
+      ]
+    },
+    {
       path: '/sistema',
       component: () => import('@/layouts/SystemLayout.vue'),
       children: [
