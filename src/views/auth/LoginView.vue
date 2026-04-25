@@ -12,6 +12,7 @@
           <v-icon icon="mdi-email-outline" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></v-icon>
           <input 
             type="email" 
+            v-model="email"
             placeholder="ejemplo@umsa.bo" 
             class="w-full bg-neutral text-sm rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-transparent focus:border-primary transition-all"
             required
@@ -62,9 +63,23 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const showPassword = ref(false)
+const email = ref('')
 
 const handleLogin = () => {
-  // Simulando login y redirigiendo al dashboard de estudiante por defecto para la demo
-  router.push('/estudiante/dashboard')
+  // Simulando login inteligente por roles para el prototipo
+  const correo = email.value.toLowerCase()
+  
+  if (correo.includes('tutor')) {
+    router.push('/tutor/dashboard')
+  } else if (correo.includes('jefe')) {
+    router.push('/jefe/dashboard')
+  } else if (correo.includes('gerente') || correo.includes('empresa')) {
+    router.push('/gerente/dashboard')
+  } else if (correo.includes('admin') || correo.includes('super')) {
+    router.push('/admin/dashboard')
+  } else {
+    // Por defecto va a estudiante
+    router.push('/estudiante/dashboard')
+  }
 }
 </script>

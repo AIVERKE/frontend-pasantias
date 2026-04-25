@@ -67,9 +67,9 @@
                 <span 
                   class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase"
                   :class="{
-                    'bg-danger/10 text-danger': item.estado === 'Pendiente',
-                    'bg-success/10 text-success': item.estado === 'Aprobada',
-                    'bg-gray-100 text-gray-600': item.estado === 'Rechazada'
+                    'bg-orange-50 text-tertiary border border-orange-200': item.estado === 'Pendiente',
+                    'bg-green-50 text-success border border-green-200': item.estado === 'Aprobada',
+                    'bg-red-50 text-danger border border-red-200': item.estado === 'Rechazada'
                   }"
                 >
                   <v-icon v-if="item.estado === 'Pendiente'" icon="mdi-clock-outline" size="12" class="mr-1"></v-icon>
