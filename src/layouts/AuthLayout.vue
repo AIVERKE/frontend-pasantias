@@ -9,7 +9,7 @@
       <!-- Contenido Superior -->
       <div class="relative z-10">
         <router-link to="/" class="inline-flex flex-col gap-4 group">
-          <img src="/images/logotipo_letras.png" alt="Símbolo UMSA" class="h-16 w-auto object-contain brightness-200 origin-left transition-transform group-hover:scale-105" />
+          <img src="/images/logotipo.png" alt="Símbolo UMSA" class="h-16 w-auto object-contain brightness-200 origin-left transition-transform group-hover:scale-105" />
           <div class="text-white mt-4">
             <h1 class="text-3xl font-headline font-bold leading-tight tracking-tight">Sistema de Gestión <br/> de <span class="text-primary font-light italic">Pasantías</span></h1>
           </div>
@@ -43,7 +43,7 @@
 
       <!-- Logo Mobile (Solo visible en pantallas pequeñas) -->
       <div class="lg:hidden absolute top-8 text-center w-full">
-        <img src="/images/logotipo_letras.png" alt="Símbolo UMSA" class="h-12 w-auto mx-auto object-contain" style="filter: brightness(0) invert(0.1);" />
+        <img :src="['/auth/login', '/auth/bienvenida'].includes($route.path) ? '/images/logotipo.png' : '/images/logotipo_letras.png'" alt="Símbolo UMSA" class="h-12 w-auto mx-auto object-contain" style="filter: brightness(0) invert(0.1);" />
       </div>
 
       <!-- Contenedor dinámico del formulario -->
