@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -213,4 +214,27 @@ const router = createRouter({
   ],
 })
 
+// ─── Guard de Navegación ─────────────────────────────────────────────────────
+// Rutas que NO requieren autenticación
+const PUBLIC_ROUTES = ['AuthLogin', 'AuthBienvenida', 'AuthRegistroEstudiante',
+  'AuthRegistroTutor', 'AuthRegistroEmpresa', 'AuthRecuperarPassword',
+  'AuthConfirmacion', 'home']
+
+router.beforeEach((to, _from) => {
+  const auth = useAuthStore()
+
+  const isPublic = PUBLIC_ROUTES.includes(to.name)
+
+  // Si ya está autenticado y quiere ir al login → redirigir al dashboard
+  if (auth.isAuthenticated && to.name === 'AuthLogin') {
+    return { path: auth.dashboardRoute }
+  }
+
+  // Si NO está autenticado y la ruta es privada → redirigir al login
+  if (!auth.isAuthenticated && !isPublic) {
+    return { name: 'AuthLogin' }
+  }
+})
+
 export default router
+

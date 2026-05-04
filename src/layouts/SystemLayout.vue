@@ -41,7 +41,7 @@
             <span class="text-[11px] text-white/60 truncate">{{ userRoleName }}</span>
           </div>
         </div>
-        <button @click="logout" class="flex items-center gap-2 text-white/60 hover:text-white text-[12px] mt-2 transition-colors">
+        <button @click="handleLogout" class="flex items-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 text-[12px] mt-2 transition-colors px-3 py-2 rounded-lg">
           <v-icon icon="mdi-logout" size="16"></v-icon>
           Cerrar sesión
         </button>
@@ -89,9 +89,12 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Detectar rol actual basado en la ruta (Mock)
 const isTutor = computed(() => route.path.includes('/tutor'))
@@ -99,27 +102,33 @@ const isJefe = computed(() => route.path.includes('/jefe'))
 const isGerente = computed(() => route.path.includes('/gerente'))
 const isAdmin = computed(() => route.path.includes('/admin'))
 
-// Datos del usuario dinámicos
+// Datos del usuario desde el store de auth
+const currentUser = computed(() => authStore.user)
+const isAuth = computed(() => authStore.isAuthenticated)
+
 const userName = computed(() => {
-  if (isAdmin.value) return 'Admin UMSA'
-  if (isGerente.value) return 'Ing. Roberto Silva'
-  if (isJefe.value) return 'Lic. María Fernández'
-  if (isTutor.value) return 'Ing. Carlos Mendoza'
-  return 'Juan Pérez'
+  if (!isAuth.value || !currentUser.value) return 'Usuario'
+  return `${currentUser.value.nombre} ${currentUser.value.apellido}`.trim()
 })
+
 const userInitials = computed(() => {
-  if (isAdmin.value) return 'AU'
-  if (isGerente.value) return 'RS'
-  if (isJefe.value) return 'MF'
-  if (isTutor.value) return 'CM'
-  return 'JP'
+  if (!isAuth.value || !currentUser.value) return 'U'
+  const nombre = currentUser.value.nombre || ''
+  const apellido = currentUser.value.apellido || ''
+  if (nombre && apellido) return `${nombre[0]}${apellido[0]}`.toUpperCase()
+  return (nombre[0] || apellido[0] || 'U').toUpperCase()
 })
+
 const userRoleName = computed(() => {
-  if (isAdmin.value) return 'Super Usuario'
-  if (isGerente.value) return 'Gerente General'
-  if (isJefe.value) return 'Jefe de Pasantes'
-  if (isTutor.value) return 'Tutor UMSA'
-  return 'Estudiante'
+  if (!isAuth.value || !currentUser.value) return 'Usuario'
+  const roleMap = {
+    super_usuario: 'Super Usuario',
+    gerente: 'Gerente General',
+    jefe_pasantes: 'Jefe de Pasantes',
+    tutor: 'Tutor UMSA',
+    estudiante: 'Estudiante'
+  }
+  return roleMap[currentUser.value.tipo] || 'Usuario'
 })
 
 // Menús dinámicos
@@ -170,8 +179,22 @@ const currentRouteName = computed(() => route.meta.title || 'Inicio')
 const pageTitle = computed(() => route.meta.title || 'Panel Principal')
 const pageSubtitle = computed(() => route.meta.subtitle || 'Bienvenido al sistema')
 
-const logout = () => {
-  // Lógica de cerrar sesión
-  router.push('/')
+const handleLogout = async () => {
+  const token = authStore.token  // Guardar token ANTES de limpiar
+  
+  // 1. Limpiar estado local INMEDIATO (sin esperar al backend)
+  authStore.logout()
+  
+  // 2. Llamar al backend para auditoría (si tenemos token válido)
+  if (token) {
+    axios.post('/api/auth/logout', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(() => {
+      // Silenciar errores - el logout local ya se ejecutó
+    })
+  }
+  
+  // 3. Redireccionar al login
+  await router.push('/auth/login')
 }
 </script>

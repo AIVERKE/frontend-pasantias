@@ -8,7 +8,7 @@
         </div>
         <div>
           <p class="text-[12px] font-medium text-gray-500 uppercase tracking-wider">Pasantes Activos</p>
-          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">45</h3>
+          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">{{ pasantesActivos }}</h3>
         </div>
       </div>
       
@@ -18,7 +18,7 @@
         </div>
         <div>
           <p class="text-[12px] font-medium text-gray-500 uppercase tracking-wider">Pasantías Publicadas</p>
-          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">8</h3>
+          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">{{ pasantiasPublicadas }}</h3>
         </div>
       </div>
       
@@ -28,10 +28,10 @@
         </div>
         <div>
           <p class="text-[12px] font-medium text-gray-500 uppercase tracking-wider">Equipo (Jefes)</p>
-          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">4</h3>
+          <h3 class="text-[32px] font-headline font-bold text-secondary leading-none mt-1">{{ equipo }}</h3>
         </div>
       </div>
-    </div>
+    </div> 
 
     <!-- Lista de Pasantías Activas Recientes -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -45,7 +45,17 @@
         </router-link>
       </div>
       <div class="p-0">
-        <div class="overflow-x-auto">
+        <div v-if="loading" class="p-6 text-center text-gray-500">
+          <v-icon icon="mdi-loading" size="24" class="animate-spin mr-2"></v-icon>
+          Cargando...
+        </div>
+        <div v-else-if="error" class="p-6 text-center text-danger">
+          {{ error }}
+        </div>
+        <div v-else-if="pasantiasRecientes.length === 0" class="p-6 text-center text-gray-500">
+          No hay pasantías publicadas aún
+        </div>
+        <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead class="bg-neutral border-b border-gray-200">
               <tr>
@@ -73,7 +83,7 @@
                 </td>
                 <td class="py-4 px-6">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-success/10 text-success">
-                    <v-icon icon="mdi-check-circle" size="12" class="mr-1"></v-icon> Publicada
+                    <v-icon icon="mdi-check-circle" size="12" class="mr-1"></v-icon> {{ item.estado }}
                   </span>
                 </td>
               </tr>
@@ -86,12 +96,45 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-const pasantiasRecientes = ref([
-  { id: 1, titulo: 'Desarrollador Frontend React/Vue', jefe: 'María Fernández', pasantes: 12, postulantes: 5 },
-  { id: 2, titulo: 'Analista de Datos y BI', jefe: 'Carlos Mendoza', pasantes: 8, postulantes: 2 },
-  { id: 3, titulo: 'Especialista en Marketing Digital', jefe: 'Ana Rodríguez', pasantes: 15, postulantes: 8 },
-  { id: 4, titulo: 'Diseñador UI/UX Junior', jefe: 'María Fernández', pasantes: 10, postulantes: 12 }
-])
+const authStore = useAuthStore()
+
+// Estado de carga
+const loading = ref(true)
+const error = ref(null)
+
+// Datos del dashboard
+const pasantiasRecientes = ref([])
+
+// Cargar datos del dashboard
+onMounted(async () => {
+  try {
+    loading.value = true
+    const response = await axios.get('/api/auth/gerente/dashboard', {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    })
+    
+    const data = response.data
+    // Actualizar contadores
+    pasantesActivos.value = data.pasantesActivos
+    pasantiasPublicadas.value = data.pasantiasPublicadas
+    equipo.value = data.equipo
+    pasantiasRecientes.value = data.pasantiasRecientes || []
+  } catch (err) {
+    console.error('Error cargando dashboard:', err)
+    error.value = 'No se pudieron cargar los datos del dashboard'
+    // Datos por defecto en caso de error
+    pasantiasRecientes.value = []
+  } finally {
+    loading.value = false
+  }
+})
+
+// Contadores
+const pasantesActivos = ref(0)
+const pasantiasPublicadas = ref(0)
+const equipo = ref(0)
 </script>

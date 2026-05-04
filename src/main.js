@@ -9,7 +9,8 @@ import './assets/tailwind.css'
 const app = createApp(App)
 
 // Configuración global de Axios
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api'
+// El baseURL vacío hace que Axios use el origen actual; el prefijo /api lo maneja cada llamada
+axios.defaults.baseURL = ''
 
 app.use(pinia)
 app.use(router)
