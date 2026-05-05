@@ -3,14 +3,14 @@
     <!-- Pestañas por postulación -->
     <div class="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto pb-1">
       <button 
-        v-for="(postulacion, index) in postulaciones" 
+        v-for="postulacion in postulaciones" 
         :key="postulacion.id"
         @click="activeTabId = postulacion.id"
         class="px-5 py-3 text-sm font-medium transition-colors relative whitespace-nowrap rounded-t-lg"
         :class="activeTabId === postulacion.id ? 'text-primary bg-white border border-b-0 border-gray-200' : 'text-gray-500 hover:text-secondary hover:bg-gray-100'"
       >
         <div class="flex items-center gap-2">
-          <span>Postulación #{{ index + 1 }}</span>
+          <span>{{ postulacion.empresa }}</span>
           <div 
             class="w-2 h-2 rounded-full"
             :class="{
@@ -64,15 +64,11 @@
             'bg-red-50 border-red-200': postulacionActiva.estado === 'Rechazada'
           }"
         >
-          <v-icon 
-            :icon="postulacionActiva.estado === 'Aprobada' ? 'mdi-check-circle' : (postulacionActiva.estado === 'Rechazada' ? 'mdi-close-circle' : 'mdi-clock-outline')" 
-            :class="{
-              'text-tertiary': postulacionActiva.estado === 'Pendiente',
-              'text-success': postulacionActiva.estado === 'Aprobada',
-              'text-danger': postulacionActiva.estado === 'Rechazada'
-            }"
-            class="mt-0.5"
-          ></v-icon>
+          <div class="mt-0.5">
+            <span v-if="postulacionActiva.estado === 'Aprobada'" class="text-success text-lg">✓</span>
+            <span v-else-if="postulacionActiva.estado === 'Rechazada'" class="text-danger text-lg">✗</span>
+            <span v-else class="text-tertiary text-lg">⏱</span>
+          </div>
           <div>
             <h4 
               class="text-sm font-bold mb-1"
@@ -90,29 +86,47 @@
 
         <!-- Detalles de la Pasantía -->
         <h3 class="text-lg font-headline font-bold text-secondary mb-4">Detalles de la Convocatoria</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div class="space-y-4">
             <div>
               <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Modalidad</span>
               <span class="text-sm text-secondary font-medium">{{ postulacionActiva.modalidad }}</span>
             </div>
             <div>
-              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Horas Requeridas</span>
-              <span class="text-sm text-secondary font-medium">{{ postulacionActiva.horas }} hrs</span>
+              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Horario Laboral</span>
+              <span class="text-sm text-secondary font-medium">{{ postulacionActiva.horario }}</span>
             </div>
             <div>
-              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Requisitos Presentados</span>
-              <ul class="list-disc list-inside text-sm text-secondary mt-1">
-                <li>Hoja de vida digital</li>
-                <li>Carta de postulación</li>
-                <li>Kardex académico</li>
-              </ul>
+              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Cupos</span>
+              <span class="text-sm text-secondary font-medium">{{ postulacionActiva.cuposOcupados }}/{{ postulacionActiva.cuposTotales }} ocupados</span>
+            </div>
+            <div>
+              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Requisitos</span>
+              <span class="text-sm text-secondary">Perfil enviado: Hoja de Vida Digital</span>
             </div>
           </div>
           <div class="bg-neutral p-4 rounded-xl border border-gray-100">
             <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-2">Descripción del Puesto</span>
             <p class="text-sm text-gray-600 leading-relaxed">{{ postulacionActiva.descripcion }}</p>
           </div>
+        </div>
+
+        <!-- Acciones Inferiores (CTA) -->
+        <div class="pt-6 border-t border-gray-100 flex justify-end">
+          <!-- ESTADO A: Rechazada -->
+          <button v-if="postulacionActiva.estado === 'Rechazada'" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            Buscar otras pasantías
+          </button>
+          
+          <!-- ESTADO B: Pendiente -->
+          <button v-else-if="postulacionActiva.estado === 'Pendiente'" class="px-5 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            Cancelar Postulación
+          </button>
+          
+          <!-- ESTADO C: Aprobada -->
+          <button v-else-if="postulacionActiva.estado === 'Aprobada'" class="px-6 py-2.5 bg-success text-white text-sm font-bold rounded-lg hover:bg-green-600 transition-colors shadow-sm shadow-success/30">
+            Ir a mi Bitácora
+          </button>
         </div>
 
       </div>
@@ -123,27 +137,44 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-// Mock Data
+// Mock Data Actualizada con 3 estados
 const postulaciones = ref([
   {
     id: 1,
+    empresa: 'Jalasoft',
+    cargo: 'Pasante de Seguridad Informática',
+    estado: 'Aprobada',
+    fecha: '01 May 2026',
+    modalidad: 'Híbrido',
+    horario: 'Lun a Vie, 14:00 a 18:00',
+    cuposOcupados: 4,
+    cuposTotales: 5,
+    descripcion: 'Apoyo en auditorías de seguridad, escaneo de vulnerabilidades y elaboración de informes técnicos de mitigación.',
+    mensajeRespuesta: '¡Felicidades! Hemos evaluado tu perfil y queremos darte la bienvenida al equipo.'
+  },
+  {
+    id: 2,
     empresa: 'TechCorp Bolivia',
     cargo: 'Desarrollador Frontend Vue.js',
     estado: 'Pendiente',
     fecha: '18 Abr 2026',
     modalidad: 'Remoto',
-    horas: 80,
+    horario: 'Lun a Vie, 09:00 a 13:00',
+    cuposOcupados: 1,
+    cuposTotales: 3,
     descripcion: 'Buscamos un estudiante entusiasta para unirse a nuestro equipo de desarrollo trabajando en plataformas web modernas.',
     mensajeRespuesta: ''
   },
   {
-    id: 2,
+    id: 3,
     empresa: 'Banco Bisa',
     cargo: 'Analista de Base de Datos',
     estado: 'Rechazada',
     fecha: '10 Abr 2026',
     modalidad: 'Presencial',
-    horas: 120,
+    horario: 'Lun a Vie, 08:30 a 12:30',
+    cuposOcupados: 2,
+    cuposTotales: 2,
     descripcion: 'Participación en el equipo de Business Intelligence para optimización de consultas, migración de datos y creación de reportes operativos.',
     mensajeRespuesta: 'Gracias por tu interés. En esta ocasión hemos seleccionado a otro candidato que se ajusta más a nuestros requerimientos técnicos de Oracle DB.'
   }
@@ -163,8 +194,8 @@ const mensajeEstado = (estado) => {
     }
   } else if (estado === 'Aprobada') {
     return {
-      titulo: '¡Felicidades! Postulación Aprobada',
-      cuerpo: 'Has sido seleccionado para esta pasantía. Tus otras postulaciones pendientes han sido marcadas como rechazadas automáticamente.'
+      titulo: '¡Felicidades! Has sido seleccionado para esta pasantía',
+      cuerpo: 'Has sido aceptado oficialmente en este puesto. Por favor dirígete a tu Bitácora para iniciar tu proceso.'
     }
   } else {
     return {
