@@ -220,78 +220,58 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-const pasantiaActiva = ref(1)
+const authStore = useAuthStore()
+const pasantiaActiva = ref(null)
+const pasantias = ref([])
 
-const pasantias = ref([
-  {
-    id: 1,
-    estado: 'Finalizada',
-    empresa: 'TechCorp Bolivia',
-    cargo: 'Desarrollador Frontend Vue.js',
-    periodo: 'Julio 2025 - Diciembre 2025',
-    nota: 92,
-    promedioActividades: 90,
-    evaluador: 'Ing. Carlos Mendoza',
-    comentarios: 'El estudiante demostró excelentes habilidades técnicas y una gran capacidad de aprendizaje rápido.\n\nSe adaptó perfectamente a nuestro flujo de trabajo ágil y logró completar todas las tareas asignadas en los tiempos estimados. Además, propuso mejoras significativas en la interfaz de usuario del proyecto principal.\n\nRecomendamos ampliamente al estudiante para futuras posiciones en el área de desarrollo.',
-    criterios: [
-      { nombre: 'Conocimiento Técnico', puntaje: 95 },
-      { nombre: 'Responsabilidad', puntaje: 100 },
-      { nombre: 'Trabajo en Equipo', puntaje: 85 },
-      { nombre: 'Iniciativa', puntaje: 90 }
-    ],
-    resenaEstudiante: null // Para probar cuando no hay reseña aún
-  },
-  {
-    id: 2,
-    estado: 'En Curso',
-    empresa: 'Jalasoft',
-    cargo: 'Pasante de Seguridad Informática',
-    periodo: 'Enero 2026 - Presente',
-    nota: null,
-    promedioActividades: null,
-    evaluador: null,
-    comentarios: null,
-    criterios: [],
-    resenaEstudiante: null
-  },
-  {
-    id: 3,
-    estado: 'Abandonada',
-    empresa: 'Innovación IT Labs',
-    cargo: 'Pasante de QA Automation',
-    periodo: 'Enero 2024 - Febrero 2024',
-    nota: null,
-    promedioActividades: null,
-    evaluador: null,
-    comentarios: null,
-    criterios: [],
-    resenaEstudiante: null
-  },
-  {
-    id: 4,
-    estado: 'Finalizada',
-    empresa: 'Banco Bisa',
-    cargo: 'Analista de Base de Datos',
-    periodo: 'Julio 2024 - Diciembre 2024',
-    nota: 88,
-    promedioActividades: 85,
-    evaluador: 'Lic. Mariana Ríos',
-    comentarios: 'Buen desempeño general en la optimización de consultas en nuestra base de datos Oracle.',
-    criterios: [
-      { nombre: 'Conocimiento Técnico', puntaje: 85 },
-      { nombre: 'Responsabilidad', puntaje: 90 },
-      { nombre: 'Trabajo en Equipo', puntaje: 85 },
-      { nombre: 'Iniciativa', puntaje: 95 }
-    ],
-    // Ejemplo de una reseña ya existente
-    resenaEstudiante: {
-      estrellas: 4,
-      comentario: 'Fue una buena experiencia, aprendí mucho sobre bases de datos corporativas gigantes. El tutor a veces estaba muy ocupado, pero en general recomiendo mucho el lugar para aprender.'
+onMounted(async () => {
+  if (!authStore.user?.id) return
+  
+  try {
+    const res = await axios.get(`/api/inscripciones/estudiante/${authStore.user.id}`)
+    // Filtrar solo las que han sido aprobadas
+    const inscripciones = res.data.filter(i => i.estado === 'aprobada')
+    
+    pasantias.value = inscripciones.map(i => {
+      let estadoLabel = 'En Curso'
+      if (i.estado_ejecucion === 'finalizada') estadoLabel = 'Finalizada'
+      if (i.estado_ejecucion === 'abandonada') estadoLabel = 'Abandonada'
+      
+      const inicio = i.fecha_inicio_periodo ? new Date(i.fecha_inicio_periodo).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }) : ''
+      const fin = i.fecha_fin_periodo ? new Date(i.fecha_fin_periodo).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }) : 'Presente'
+
+      return {
+        id: i.id_inscripcion,
+        estado: estadoLabel,
+        empresa: i.pasantia?.empresa?.nombre || 'Empresa',
+        cargo: i.pasantia?.titulo || 'Pasantía',
+        periodo: `${inicio} - ${fin}`,
+        nota: i.estado_ejecucion === 'finalizada' ? 92 : null, // Mock de nota final
+        promedioActividades: 90, // Mock
+        evaluador: i.jefe ? `${i.jefe.nombres} ${i.jefe.apellidos}` : 'Jefe de Pasantes',
+        comentarios: i.estado_ejecucion === 'finalizada' ? 'El estudiante demostró excelentes habilidades técnicas y una gran capacidad de aprendizaje.' : null,
+        criterios: i.estado_ejecucion === 'finalizada' ? [
+          { nombre: 'Conocimiento Técnico', puntaje: 95 },
+          { nombre: 'Responsabilidad', puntaje: 100 },
+          { nombre: 'Trabajo en Equipo', puntaje: 85 },
+          { nombre: 'Iniciativa', puntaje: 90 }
+        ] : [],
+        resenaEstudiante: null
+      }
+    })
+    
+    if (pasantias.value.length > 0) {
+      pasantiaActiva.value = pasantias.value[0].id
     }
+  } catch (error) {
+    console.error('Error al cargar pasantías', error)
   }
-])
+})
+
 
 const informeSeleccionado = computed(() => {
   return pasantias.value.find(p => p.id === pasantiaActiva.value)

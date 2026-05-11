@@ -1,17 +1,19 @@
 <template>
   <div class="h-full flex flex-col">
     <!-- Pestañas de Filtrado -->
-    <div class="flex gap-4 mb-6 border-b border-gray-200">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.id"
-        @click="activeTab = tab.id"
-        class="pb-3 px-1 text-sm font-medium transition-colors relative"
-        :class="activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-secondary'"
-      >
-        {{ tab.label }}
-        <div v-if="activeTab === tab.id" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full transition-all duration-150"></div>
-      </button>
+    <div v-if="tabs.length > 1" class="border-b border-gray-200 mb-8">
+      <nav class="flex space-x-8">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          class="pb-3 px-1 text-sm font-medium transition-colors relative"
+          :class="activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-secondary'"
+        >
+          {{ tab.label }}
+          <div v-if="activeTab === tab.id" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full transition-all duration-150"></div>
+        </button>
+      </nav>
     </div>
 
     <!-- Grid de Tarjetas -->
@@ -157,11 +159,13 @@
             Cancelar
           </button>
           <button 
-            :disabled="ctaConfig.disabled"
-            class="px-6 py-2 text-sm font-bold rounded-lg transition-colors"
+            :disabled="ctaConfig.disabled || isPostulando"
+            class="px-6 py-2 text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
             :class="ctaConfig.classes"
+            @click="postular"
           >
-            {{ ctaConfig.text }}
+            <span v-if="isPostulando" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            {{ isPostulando ? 'Enviando...' : ctaConfig.text }}
           </button>
         </div>
       </template>
@@ -170,106 +174,66 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import SlidePanel from '@/components/SlidePanel.vue'
+import { useAuthStore } from '@/stores/auth'
 
-// Estado Global Simulado del Estudiante
-// Puedes cambiar a 'con_pasantia' para ver el estado de bloqueo
+const authStore = useAuthStore()
+const isPostulando = ref(false)
+
 const estadoEstudianteGlobal = ref('disponible') 
-// IDs de pasantías a las que ya se postuló
-const pasantiasPostuladas = ref([2]) 
+const pasantiasPostuladas = ref([]) 
 
-// Estado del Panel
 const isPanelOpen = ref(false)
 const activeTab = ref('todas')
 const pasantiaSeleccionada = ref(null)
 
-// Datos Mock Actualizados
-const tabs = [
-  { id: 'todas', label: 'Todas las áreas' },
-  { id: 'sistemas', label: 'Ingeniería de Sistemas' },
-  { id: 'informatica', label: 'Informática' }
-]
+const tabs = ref([{ id: 'todas', label: 'Todas las áreas' }])
+const pasantias = ref([])
 
-const pasantias = ref([
-  {
-    id: 1,
-    titulo: 'Desarrollador Frontend Vue.js',
-    empresa: 'TechCorp Bolivia',
-    tipo: 'Remoto',
-    horario: 'Lun - Vie, 09:00 a 13:00',
-    cuposTotales: 3,
-    cuposOcupados: 1,
-    categoria: 'sistemas',
-    fechaLimite: '30 Abr 2026',
-    tags: ['Vue.js', 'Tailwind', 'APIs'],
-    descripcion: 'Buscamos un estudiante entusiasta para unirse a nuestro equipo de desarrollo trabajando en plataformas web modernas. Aprenderás buenas prácticas de código y metodologías ágiles.',
-    requisitos: [
-      'Estudiante de último año de Ingeniería de Sistemas.',
-      'Conocimientos básicos en HTML, CSS y JavaScript.',
-      'Familiaridad con frameworks frontend (Vue.js o React).'
-    ],
-    actividades: [
-      'Maquetación de interfaces web usando Tailwind CSS.',
-      'Consumo de APIs RESTful.',
-      'Participación en dailies y revisión de código.'
-    ],
-    comentarios: [
-      { autor: 'Ana López', rating: 5, texto: 'Excelente ambiente laboral, los tutores realmente se preocupan por que aprendas. Totalmente recomendado.' },
-      { autor: 'Carlos Ruiz', rating: 4, texto: 'Mucho aprendizaje en poco tiempo. A veces el ritmo es alto pero vale la pena.' }
-    ]
-  },
-  {
-    id: 2,
-    titulo: 'Analista de Base de Datos',
-    empresa: 'Banco Bisa',
-    tipo: 'Presencial',
-    horario: 'Lun - Vie, 08:30 a 12:30',
-    cuposTotales: 2,
-    cuposOcupados: 0,
-    categoria: 'informatica',
-    fechaLimite: '15 May 2026',
-    tags: ['SQL', 'Oracle', 'ETL'],
-    descripcion: 'Participación en el equipo de Business Intelligence para optimización de consultas, migración de datos y creación de reportes operativos.',
-    requisitos: [
-      'Sólidos conocimientos en SQL y bases de datos relacionales.',
-      'Conocimientos en metodologías de diseño de bases de datos.',
-      'Proactividad y capacidad de análisis.'
-    ],
-    actividades: [
-      'Optimización de consultas SQL lentas.',
-      'Diseño y ejecución de procesos ETL básicos.',
-      'Apoyo en la creación de dashboards de BI.'
-    ],
-    comentarios: []
-  },
-  {
-    id: 3,
-    titulo: 'Pasante de Seguridad Informática',
-    empresa: 'Jalasoft',
-    tipo: 'Híbrido',
-    horario: 'Lun - Vie, 14:00 a 18:00',
-    cuposTotales: 5,
-    cuposOcupados: 4,
-    categoria: 'sistemas',
-    fechaLimite: '10 May 2026',
-    tags: ['Pentesting', 'Redes', 'Linux'],
-    descripcion: 'Apoyo en auditorías de seguridad, escaneo de vulnerabilidades y elaboración de informes técnicos de mitigación.',
-    requisitos: [
-      'Conocimiento en redes (TCP/IP, enrutamiento).',
-      'Manejo de sistemas operativos basados en Linux.',
-      'Interés comprobable en ciberseguridad.'
-    ],
-    actividades: [
-      'Ejecución de escaneos de vulnerabilidades automatizados.',
-      'Redacción de reportes técnicos de hallazgos.',
-      'Apoyo en auditorías de seguridad internas.'
-    ],
-    comentarios: [
-      { autor: 'Miguel Soto', rating: 5, texto: 'Una oportunidad increíble para aplicar conceptos de seguridad en proyectos reales.' }
-    ]
+onMounted(async () => {
+  try {
+    if (authStore.user?.id) {
+      const inscripcionesRes = await axios.get(`/api/inscripciones/estudiante/${authStore.user.id}`)
+      pasantiasPostuladas.value = inscripcionesRes.data.map(i => i.pasantia?.id_pasantia)
+      
+      const activa = inscripcionesRes.data.find(i => i.estado === 'aprobada' || i.estado_ejecucion === 'en_curso')
+      if (activa) {
+        estadoEstudianteGlobal.value = 'con_pasantia'
+      }
+    }
+
+    const response = await axios.get('/api/pasantias')
+    pasantias.value = response.data.map(p => ({
+      id: p.id_pasantia,
+      titulo: p.titulo,
+      empresa: p.empresa ? p.empresa.nombre : 'Sin Empresa asignada',
+      tipo: 'Presencial', 
+      horario: p.horario_laboral || 'No especificado',
+      cuposTotales: p.cupos_totales || 0,
+      cuposOcupados: 0, 
+      categoria: p.area || 'General',
+      fechaLimite: p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin límite',
+      tags: [], 
+      descripcion: p.descripcion,
+      requisitos: ['Cumplir con el horario establecido', 'Ser proactivo y responsable'],
+      actividades: ['Asignadas por el Jefe de Pasantes al inicio de la pasantía'],
+      comentarios: []
+    }))
+
+    const areasUnicas = [...new Set(pasantias.value.map(p => p.categoria))]
+    if (areasUnicas.length > 0) {
+      tabs.value = [
+        { id: 'todas', label: 'Todas las áreas' },
+        ...areasUnicas.map(area => ({ id: area, label: area.charAt(0).toUpperCase() + area.slice(1) }))
+      ]
+    }
+
+  } catch (error) {
+    console.error('Error al cargar pasantías desde el backend:', error)
   }
-])
+})
 
 const pasantiasFiltradas = computed(() => {
   if (activeTab.value === 'todas') return pasantias.value
@@ -281,11 +245,9 @@ const abrirDetalle = (pasantia) => {
   isPanelOpen.value = true
 }
 
-// Lógica Condicional del Botón CTA
 const ctaConfig = computed(() => {
   if (!pasantiaSeleccionada.value) return {}
 
-  // ESTADO 1: Bloqueo por Pasantía Activa
   if (estadoEstudianteGlobal.value === 'con_pasantia') {
     return {
       disabled: true,
@@ -294,7 +256,6 @@ const ctaConfig = computed(() => {
     }
   }
 
-  // ESTADO 2: Ya Postulado a ESTA pasantía
   if (pasantiasPostuladas.value.includes(pasantiaSeleccionada.value.id)) {
     return {
       disabled: true,
@@ -303,11 +264,31 @@ const ctaConfig = computed(() => {
     }
   }
 
-  // ESTADO 3: Disponible para Postular
   return {
     disabled: false,
     text: 'Postularme',
     classes: 'bg-primary text-white hover:bg-blue-600 shadow-sm shadow-primary/30'
   }
 })
+
+const postular = async () => {
+  if (ctaConfig.value.disabled) return
+
+  isPostulando.value = true
+  
+  try {
+    await axios.post('/api/inscripciones', {
+      id_estudiante: authStore.user.id,
+      id_pasantia: pasantiaSeleccionada.value.id
+    })
+    
+    pasantiasPostuladas.value.push(pasantiaSeleccionada.value.id)
+    console.log('Postulación exitosa')
+  } catch (error) {
+    console.error('Error al postular:', error)
+    alert('Hubo un error al postular. Intenta de nuevo.')
+  } finally {
+    isPostulando.value = false
+  }
+}
 </script>

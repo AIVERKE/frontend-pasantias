@@ -17,12 +17,9 @@
             <option disabled value="">Selecciona tu mención...</option>
             <option v-for="opcion in opcionesMencion" :key="opcion" :value="opcion">{{ opcion }}</option>
           </select>
-          <div class="flex gap-2">
-            <span class="px-2 py-1 bg-blue-50 text-primary rounded text-[11px] font-bold tracking-wider uppercase border border-blue-100">8vo Semestre</span>
-            <span class="px-2 py-1 bg-gray-50 text-gray-600 rounded text-[11px] font-bold tracking-wider uppercase border border-gray-200">Inglés B2</span>
+            <span class="px-2 py-1 bg-blue-50 text-primary rounded text-[11px] font-bold tracking-wider uppercase border border-blue-100">{{ estudiante?.semestre || '8vo' }} Semestre</span>
           </div>
         </div>
-      </div>
       
       <!-- Campo para Link a CV en Drive -->
       <div class="w-full md:w-1/3">
@@ -86,15 +83,6 @@
               placeholder="Escribe un breve resumen de tu perfil profesional, intereses y objetivos..."
             ></textarea>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Intereses de Pasantía</label>
-            <input 
-              v-model="perfil.intereses"
-              type="text" 
-              class="w-full bg-neutral text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary transition-all"
-              placeholder="Ej. Desarrollo Web, Bases de Datos, Seguridad..."
-            />
-          </div>
         </div>
 
         <!-- Tab: Habilidades -->
@@ -126,7 +114,7 @@
               Usa el buscador para seleccionar opciones estandarizadas de la base de datos.
             </div>
 
-            <div class="flex flex-wrap gap-2">
+            <div v-if="perfil.habilidades.length > 0" class="flex flex-wrap gap-2">
               <div 
                 v-for="(hab, index) in perfil.habilidades" 
                 :key="index"
@@ -137,6 +125,9 @@
                   <v-icon icon="mdi-close" size="14"></v-icon>
                 </button>
               </div>
+            </div>
+            <div v-else class="text-sm text-gray-500 italic mt-2">
+              Aún no has añadido ninguna habilidad.
             </div>
           </div>
         </div>
@@ -153,11 +144,16 @@
             </div>
 
           </div>
-          
-          <button @click="abrirModal" class="mt-6 flex items-center gap-2 text-primary text-sm font-bold hover:underline">
-            <v-icon icon="mdi-plus" size="18"></v-icon>
-            Añadir entrada académica
-          </button>
+          <div class="flex justify-between items-center mt-6">
+            <button @click="abrirModal" class="flex items-center gap-2 text-primary text-sm font-bold hover:underline">
+              <v-icon icon="mdi-plus" size="18"></v-icon>
+              Añadir entrada académica
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-secondary text-sm font-bold rounded-lg transition-colors border border-gray-200">
+              <v-icon icon="mdi-file-pdf-box" size="18" class="text-danger"></v-icon>
+              Descargar PDF
+            </button>
+          </div>
         </div>
 
       </div>
@@ -238,11 +234,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+const estudiante = ref(null)
 
 // --- PESTAÑAS Y PERFIL BASE ---
 const activeTab = ref('resumen')
-const cvLink = ref('https://drive.google.com/file/d/1A2B3C4D5E6F/view')
+const cvLink = ref('')
 
 // Opciones restringidas para la mención
 const opcionesMencion = [
@@ -257,10 +258,22 @@ const opcionesMencion = [
 ]
 
 const perfil = reactive({
-  mencion: 'Mención Ingeniería de Sistemas', // Valor por defecto validado
-  sobreMi: 'Soy un estudiante apasionado por el desarrollo de software y las nuevas tecnologías. Busco mi primera experiencia profesional en una empresa donde pueda aportar mis conocimientos y seguir aprendiendo de profesionales con experiencia.',
-  intereses: 'Desarrollo Web Fullstack, Arquitectura de Software, Cloud Computing',
-  habilidades: ['Vue.js', 'Node.js', 'Git']
+  mencion: '',
+  sobreMi: '',
+  habilidades: []
+})
+
+onMounted(async () => {
+  if (authStore.user?.id) {
+    try {
+      const res = await axios.get(`/api/estudiantes/${authStore.user.id}`)
+      estudiante.value = res.data
+      perfil.mencion = res.data.carrera || 'Mención Ingeniería de Sistemas'
+      // Opcional: Cargar historial o habilidades si estuvieran disponibles
+    } catch (error) {
+      console.error('Error al cargar datos del estudiante:', error)
+    }
+  }
 })
 
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col md:flex-row gap-6">
+  <div v-if="tienePasantia" class="h-full flex flex-col md:flex-row gap-6">
     <!-- Columna Izquierda: LISTA (LIFO) -->
     <div class="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
       <div class="p-4 border-b border-gray-100 shrink-0 bg-gray-50 flex justify-between items-center">
@@ -33,8 +33,12 @@
       <!-- Encabezado del Panel -->
       <div class="flex border-b border-gray-100 bg-gray-50 p-6 shrink-0 justify-between items-center">
         <div>
-          <h2 class="text-xl font-headline font-bold text-secondary">Actividades de la Semana</h2>
-          <p class="text-sm text-gray-500 mt-1">{{ semanaDetalle.titulo }} ({{ semanaDetalle.fecha }})</p>
+          <h2 class="text-xl font-headline font-bold text-secondary">Actividades Registradas</h2>
+          <p class="text-sm text-gray-500 mt-1">{{ semanaDetalle.titulo }}</p>
+        </div>
+        <div v-if="promedio !== null" class="bg-primary/10 px-4 py-2 rounded-lg">
+          <span class="text-xs font-bold text-primary block uppercase tracking-wider">Promedio Global</span>
+          <span class="text-2xl font-bold text-primary">{{ promedio.toFixed(1) }} / 100</span>
         </div>
       </div>
 
@@ -67,13 +71,13 @@
             <span 
               class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
               :class="{
-                'bg-gray-50 text-gray-600 border-gray-200': act.estado === 'Pendiente',
-                'bg-yellow-50 text-yellow-700 border-yellow-200': act.estado === 'En curso',
-                'bg-green-50 text-success border-green-200': act.estado === 'Completada',
-                'bg-red-50 text-danger border-red-200': act.estado === 'No completada'
+                'bg-gray-50 text-gray-600 border-gray-200': act.estado === 'pendiente',
+                'bg-yellow-50 text-yellow-700 border-yellow-200': act.estado === 'en_curso',
+                'bg-green-50 text-success border-green-200': act.estado === 'completada',
+                'bg-red-50 text-danger border-red-200': act.estado === 'no_completada'
               }"
             >
-              {{ act.estado }}
+              {{ act.estado.replace('_', ' ') }}
             </span>
           </div>
 
@@ -103,94 +107,75 @@
       </div>
     </div>
   </div>
+
+  <!-- Estado Vacío -->
+  <div v-else class="flex flex-col items-center justify-center h-full py-12 text-center">
+    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+        <polyline points="13 2 13 9 20 9"></polyline>
+      </svg>
+    </div>
+    <h3 class="text-xl font-headline font-bold text-secondary mb-2">Aún no tienes acceso a la Bitácora</h3>
+    <p class="text-gray-500 mb-6 max-w-md">Debes tener una pasantía aprobada y en curso para visualizar tus actividades asignadas y su evaluación.</p>
+    <router-link :to="{ name: 'Pasantias' }" class="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-600 transition-colors shadow-sm shadow-primary/30 block">
+      Explorar Pasantías
+    </router-link>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-// Lógica LIFO: Los datos deben estar ordenados del más reciente al más antiguo
+const authStore = useAuthStore()
+const tienePasantia = ref(false)
+const promedio = ref(null)
+
 const semanas = ref([
   {
-    id: 3,
-    titulo: 'Semana 3',
-    fecha: '15 May - 19 May',
-    resumen: 'Desarrollo de módulos e integraciones con API.',
-    actividades: [
-      { 
-        id: 302, 
-        titulo: 'Manejo de Errores Globales', 
-        descripcion: 'Implementar un interceptor de Axios para capturar errores 500 y 401, y mostrar notificaciones visuales al usuario.', 
-        estado: 'En curso',
-        fechaAsignacion: '17 de Mayo',
-        responsable: 'Ing. Roberto Carlos - Jefe de Pasantes',
-        nota: null
-      },
-      { 
-        id: 301, 
-        titulo: 'Vista Tabla de Usuarios', 
-        descripcion: 'Crear componente de tabla de usuarios con datos provenientes de la API REST interna.', 
-        estado: 'Pendiente',
-        fechaAsignacion: '15 de Mayo',
-        responsable: 'Ing. Roberto Carlos - Jefe de Pasantes',
-        nota: null
-      }
-    ]
-  },
-  {
-    id: 2,
-    titulo: 'Semana 2',
-    fecha: '08 May - 12 May',
-    resumen: 'Refactorización y mejoras de componentes.',
-    actividades: [
-      { 
-        id: 202, 
-        titulo: 'Migración a Tailwind', 
-        descripcion: 'Eliminar el CSS personalizado antiguo y migrar todos los estilos de la vista de login a TailwindCSS.', 
-        estado: 'No completada',
-        fechaAsignacion: '10 de Mayo',
-        responsable: 'Ing. Roberto Carlos - Jefe de Pasantes',
-        nota: 45
-      },
-      { 
-        id: 201, 
-        titulo: 'Refactor del Navbar', 
-        descripcion: 'Optimizar la barra de navegación para que sea totalmente responsive en dispositivos móviles.', 
-        estado: 'Completada',
-        fechaAsignacion: '08 de Mayo',
-        responsable: 'Ing. Roberto Carlos - Jefe de Pasantes',
-        nota: 95
-      }
-    ]
-  },
-  {
     id: 1,
-    titulo: 'Semana 1',
-    fecha: '01 May - 05 May',
-    resumen: 'Inducción y configuración del entorno de desarrollo.',
-    actividades: [
-      { 
-        id: 102, 
-        titulo: 'Lectura de estándares', 
-        descripcion: 'Leer y comprender el manual de estilo de código de la empresa para frontend.', 
-        estado: 'Completada',
-        fechaAsignacion: '02 de Mayo',
-        responsable: 'Lic. Laura Méndez - RRHH',
-        nota: 100
-      },
-      { 
-        id: 101, 
-        titulo: 'Configuración de entorno', 
-        descripcion: 'Instalar Node.js, configurar Git y solicitar accesos a los repositorios correspondientes.', 
-        estado: 'Completada',
-        fechaAsignacion: '01 de Mayo',
-        responsable: 'Ing. Roberto Carlos - Jefe de Pasantes',
-        nota: 100
-      }
-    ]
+    titulo: 'Actividades Registradas',
+    fecha: 'Historial completo',
+    resumen: 'Todas las actividades ordenadas de la más reciente a la más antigua.',
+    actividades: []
   }
 ])
 
-const semanaActiva = ref(semanas.value[0].id)
+const semanaActiva = ref(1)
+
+onMounted(async () => {
+  if (!authStore.user?.id) return
+  
+  try {
+    // 1. Obtener postulaciones para buscar una aprobada
+    const inscripcionesRes = await axios.get(`/api/inscripciones/estudiante/${authStore.user.id}`)
+    const pasantiaActiva = inscripcionesRes.data.find(i => i.estado === 'aprobada' && i.estado_ejecucion === 'en_curso')
+    
+    if (pasantiaActiva) {
+      tienePasantia.value = true
+      
+      // 2. Cargar actividades
+      const actsRes = await axios.get(`/api/actividades/inscripcion/${pasantiaActiva.id_inscripcion}`)
+      
+      const actividadesLIFO = actsRes.data.actividades.map(a => ({
+        id: a.id_actividad,
+        titulo: a.titulo_actividad,
+        descripcion: a.descripcion_actividad,
+        estado: a.estado_semaforo,
+        fechaAsignacion: new Date(a.fecha_asignacion).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+        responsable: a.jefe_asignador ? `${a.jefe_asignador.nombres} ${a.jefe_asignador.apellidos}` : 'Jefe de Pasantes',
+        nota: a.nota_actividad
+      })).reverse() // LIFO
+
+      semanas.value[0].actividades = actividadesLIFO
+      promedio.value = actsRes.data.promedioGlobal
+    }
+  } catch (error) {
+    console.error('Error al cargar la bitácora', error)
+  }
+})
 
 const semanaDetalle = computed(() => {
   return semanas.value.find(s => s.id === semanaActiva.value)
